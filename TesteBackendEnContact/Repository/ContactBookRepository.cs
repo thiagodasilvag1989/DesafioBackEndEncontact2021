@@ -35,11 +35,20 @@ namespace TesteBackendEnContact.Repository
         public async Task DeleteAsync(int id)
         {
             using var connection = new SqliteConnection(databaseConfig.ConnectionString);
+            connection.Open();
+            using var transaction = connection.BeginTransaction();
+            try
+            {
+                var sql = "DELETE FROM ContactBook WHERE Id = @id";
 
-            // TODO
-            var sql = "";
-
-            await connection.ExecuteAsync(sql);
+                await connection.ExecuteAsync(sql, new { id }, transaction);
+                transaction.Commit();
+            }
+            catch (SqliteException ex)
+            {
+                transaction.Rollback();
+                throw new System.Exception(ex.Message);
+            }
         }
 
 
@@ -84,7 +93,7 @@ namespace TesteBackendEnContact.Repository
         public ContactBookDao(IContactBook contactBook)
         {
             Id = contactBook.Id;
-            Name = Name;
+            Name = contactBook.Name;
         }
 
         public IContactBook Export() => new ContactBook(Id, Name);
