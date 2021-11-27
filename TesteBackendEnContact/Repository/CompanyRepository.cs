@@ -25,13 +25,22 @@ namespace TesteBackendEnContact.Repository
         {
             using var connection = new SqliteConnection(databaseConfig.ConnectionString);
             var dao = new CompanyDao(company);
+            connection.Open();
+            using var transaction = connection.BeginTransaction();
+            try
+            {
+                if (dao.Id == 0)
+                    dao.Id = await connection.InsertAsync(dao);
+                else
+                    await connection.UpdateAsync(dao);
 
-            if (dao.Id == 0)
-                dao.Id = await connection.InsertAsync(dao);
-            else
-                await connection.UpdateAsync(dao);
+                return dao.Export();
+            }
+            catch(SqliteException ex)
+            {
+                throw new System.Exception(ex.Message);
+            }
 
-            return dao.Export();
         }
 
         public async Task DeleteAsync(int id)
@@ -48,7 +57,7 @@ namespace TesteBackendEnContact.Repository
                 await connection.ExecuteAsync(sql.ToString(), new { id }, transaction);
                 transaction.Commit();
             }
-            catch(SqliteException ex)
+            catch (SqliteException ex)
             {
                 transaction.Rollback();
                 throw new System.Exception(ex.Message);
