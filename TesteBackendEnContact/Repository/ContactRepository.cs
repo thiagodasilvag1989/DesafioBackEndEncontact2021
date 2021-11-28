@@ -30,14 +30,21 @@ namespace TesteBackendEnContact.Repository
             try
             {
                 if (dao.Id == 0)
+                {
                     dao.Id = await connection.InsertAsync(dao);
+                    transaction.Commit();
+                }
                 else
+                {
                     await connection.UpdateAsync(dao);
+                    transaction.Commit();
+                }
 
                 return dao.Export();
             }
             catch (SqliteException ex)
             {
+                transaction.Rollback();
                 throw new System.Exception(ex.Message);
             }
 
@@ -86,6 +93,8 @@ namespace TesteBackendEnContact.Repository
     {
         [Key]
         public int Id { get; set; }
+        public int ContactBookId { get; set; }
+        public int CompanyId { get; set; }
         public string Name { get; set; }
         public string Phone { get; set; }
         public string Email { get; set; }
@@ -98,12 +107,14 @@ namespace TesteBackendEnContact.Repository
         public ContactDao(IContact contact)
         {
             Id = contact.Id;
+            ContactBookId = contact.ContactBookId;
+            CompanyId = contact.CompanyId;
             Name = contact.Name;
             Phone = contact.Phone;
             Email = contact.Email;
             Address = contact.Address;
         }
 
-        public IContact Export() => new Contact(Id, Name, Phone, Email, Address);
+        public IContact Export() => new Contact(Id, ContactBookId, CompanyId, Name, Phone, Email, Address);
     }
 }

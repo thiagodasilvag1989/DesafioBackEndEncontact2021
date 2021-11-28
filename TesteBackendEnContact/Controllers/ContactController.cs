@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using TesteBackendEnContact.Controllers.Models;
 using TesteBackendEnContact.Core.Domain.ContactBook.Contact;
 using TesteBackendEnContact.Core.Interface.ContactBook.Contact;
 using TesteBackendEnContact.Repository.Interface;
@@ -20,9 +21,9 @@ namespace TesteBackendEnContact.Controllers
         }
 
         [HttpPost]
-        public async Task<IContact> Post(Contact contact, [FromServices] IContactRepository contactRepository)
+        public async Task<ActionResult<IContact>> Post(SaveContactRequest contact, [FromServices] IContactRepository contactRepository)
         {
-            return await contactRepository.SaveAsync(contact);
+            return Ok(await contactRepository.SaveAsync(contact.ToCompany()));
         }
 
         [HttpDelete]

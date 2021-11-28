@@ -30,14 +30,20 @@ namespace TesteBackendEnContact.Repository
             try
             {
                 if (dao.Id == 0)
+                {
                     dao.Id = await connection.InsertAsync(dao);
+                    transaction.Commit();
+                }
                 else
+                {
                     await connection.UpdateAsync(dao);
-
-                return dao.Export();
+                    transaction.Commit();
+                }
+                    return dao.Export();
             }
             catch(SqliteException ex)
             {
+                transaction.Rollback();
                 throw new System.Exception(ex.Message);
             }
 

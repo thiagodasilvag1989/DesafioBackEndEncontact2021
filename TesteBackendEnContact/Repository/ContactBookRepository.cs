@@ -29,15 +29,23 @@ namespace TesteBackendEnContact.Repository
             using var transaction = connection.BeginTransaction();
             try
             {
-                dao.Id = await connection.InsertAsync(dao);
+                if (dao.Id == 0)
+                {
+                    dao.Id = await connection.InsertAsync(dao);
+                    transaction.Commit();
+                }
+                else
+                {
+                    await connection.UpdateAsync(dao);
+                    transaction.Commit();
+                }
+                return dao.Export();
             }
-            catch(SqliteException ex)
+            catch (SqliteException ex)
             {
+                transaction.Rollback();
                 throw new System.Exception(ex.Message);
             }
-            return dao.Export();
-
-
         }
 
 
