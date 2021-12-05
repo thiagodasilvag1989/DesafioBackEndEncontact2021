@@ -1,14 +1,18 @@
 ﻿using Dapper;
+using Dapper.Contrib.Extensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Data.Sqlite;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Data;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TesteBackendEnContact.Core.Domain;
+using TesteBackendEnContact.Core.Interface;
 using TesteBackendEnContact.Database;
 using TesteBackendEnContact.Repository.Interface;
 
@@ -35,7 +39,7 @@ namespace TesteBackendEnContact.Repository
                     ImportCSV import = new ImportCSV();
                     var linha = reader.ReadLine();
                     var valores = linha.Split(';');
-                    import.Comany = valores[0];
+                    import.Company = valores[0];
                     import.Name = valores[1];
                     import.Phone = valores[2];
                     import.Email = valores[3];
@@ -56,34 +60,26 @@ namespace TesteBackendEnContact.Repository
             using var transaction = connection.BeginTransaction();
             try
             {
-                var paramDetails = new DynamicParameters();
-                paramDetails.Add("@Company");
-                paramDetails.Add("@Name");
-                paramDetails.Add("@Phone");
-                paramDetails.Add("@Email");
-                paramDetails.Add("@Adress");
-                paramDetails.Add("@ContactName");
+                //TODO: Passar todos as colunas para os parametros e fazer o insert para cada ID
 
+                var dao = new ImportCSVDao(importCSV);
 
-                //List<SqliteParameter> sqliteParameter = new List<SqliteParameter>();
-                //    sqliteParameter[0].ParameterName = "@Company";
-                //    sqliteParameter[0].Value = importCSV.Comany;
-                //    sqliteParameter[1].ParameterName = "@Name";
-                //    sqliteParameter[1].Value = importCSV.Name;
-                //    sqliteParameter[2].ParameterName = "@Phone";
-                //    sqliteParameter[2].Value = importCSV.Phone;
-                //    sqliteParameter[3].ParameterName = "@Email";
-                //    sqliteParameter[3].Value = importCSV.Email;
-                //    sqliteParameter[4].ParameterName = "@Adress";
-                //    sqliteParameter[4].Value = importCSV.Adress;
-                //    sqliteParameter[5].ParameterName = "@ContactName";
-                //    sqliteParameter[5].Value = importCSV.ContactName;
-
+                if (importCSV.CompanyId == 0)
+                {
+                    dao.CompanyId = await connection.InsertAsync(dao);
+                }
+                    var paramDetails = new DynamicParameters();
+                paramDetails.Add("@Company", importCSV.Company);
+                paramDetails.Add("@Name", importCSV.Name);
+                paramDetails.Add("@Phone", importCSV.Phone);
+                paramDetails.Add("@Email", importCSV.Email);
+                paramDetails.Add("@Adress", importCSV.Adress);
+               // paramDetails.Add("@ContactName", importCSV.ContactName);
 
                 var sql = new StringBuilder();
-                sql.AppendLine("INSERT INTO Company VALUES (@Company)");
+                //sql.AppendLine("INSERT INTO Company VALUES (@Company)");
                 sql.AppendLine("INSERT INTO Contact VALUES (@Name, @Phone,@Email,@Adress)");
-                sql.AppendLine("INSERT INTO ContactBook VALUES (@ContactName)");
+                //sql.AppendLine("INSERT INTO ContactBook VALUES (@ContactName)");
                 await connection.ExecuteAsync(sql.ToString(), new { paramDetails }, transaction);
 
                 transaction.Commit();
@@ -100,6 +96,43 @@ namespace TesteBackendEnContact.Repository
         //    parameters.Add(new SqliteParameter("@Idf_Acao_Administrador"));
 
         //}
+
+        [Table("Company")]
+        public class ImportCSVDao : IImportCSV
+        {
+            [Key]
+            public int CompanyId { get; set; }
+            [Key]
+            public int ContactBookId { get; set; }
+            [Key]
+            public int ContactId { get; set; }
+            public string Company { get; set; }
+            public string Name { get; set; }
+            public string Phone { get; set; }
+            public string Email { get; set; }
+            public string Adress { get; set; }
+            public string ContactName { get; set; }
+
+            public ImportCSVDao()
+            {
+            }
+
+            public ImportCSVDao(IImportCSV importCSV)
+            {
+                CompanyId = importCSV.CompanyId;
+                ContactBookId = importCSV.ContactBookId;
+                ContactBookId = importCSV.ContactId;
+                Company = importCSV.Company;
+                Name = importCSV.Name;
+                Phone = importCSV.Phone;
+                Email = importCSV.Email;
+                Adress = importCSV.Adress;
+                ContactName = importCSV.ContactName;
+
+            }
+
+            public IImportCSV Export() => new ImportCSV(CompanyId, ContactBookId, ContactId, Company, Name, Phone, Email, Adress, ContactName);
+        }
     }
 }
 

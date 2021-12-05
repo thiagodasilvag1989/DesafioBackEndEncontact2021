@@ -8,16 +8,22 @@ namespace TesteBackendEnContact.Core.Domain
 {
     public class ImportCSV : IImportCSV
     {
-        public string Comany { get; set; }
+        public int CompanyId { get; set; }
+        public int ContactBookId { get; set; }
+        public int ContactId { get; set; }
+        public string Company { get; set; }
         public string Name { get; set; }
         public string Phone { get; set; }
         public string Email { get; set; }
         public string Adress { get; set; }
         public string ContactName { get; set; }
 
-        public ImportCSV(string comany, string name, string phone, string email, string adress, string contactName)
+        public ImportCSV(int companyId, int contactBookId, int contactId, string company, string name, string phone, string email, string adress, string contactName)
         {
-            Comany = comany;
+            CompanyId = companyId;
+            ContactBookId = contactBookId;
+            ContactId = contactId;
+            Company = company;
             Name = name;
             Phone = phone;
             Email = email;
