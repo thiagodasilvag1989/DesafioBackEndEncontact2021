@@ -42,6 +42,7 @@ namespace TesteBackendEnContact
             services.AddScoped<IContactBookRepository, ContactBookRepository>();
             services.AddScoped<ICompanyRepository, CompanyRepository>();
             services.AddScoped<IContactRepository, ContactRepository>();
+            services.AddScoped<IImportCSVRepository, ImportCSVRepository>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
