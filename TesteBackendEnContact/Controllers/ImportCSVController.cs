@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using TesteBackendEnContact.Controllers.Models;
+using TesteBackendEnContact.Core.Domain;
 using TesteBackendEnContact.Core.Interface;
 using TesteBackendEnContact.Repository.Interface;
 
@@ -18,6 +20,12 @@ namespace TesteBackendEnContact.Controllers
         public ActionResult<IImportCSV> Post(string url, [FromServices] IImportCSVRepository importCSVRepository)
         {
             return Ok(importCSVRepository.ImportCSV(url));
+        }
+
+        [HttpPost]
+        public ActionResult<IImportCSV> SalvarCSV(ImportCSV importCSV, [FromServices] IImportCSVRepository importCSVRepository)
+        {
+            return Ok(importCSVRepository.Save(importCSV));
         }
     }
 }
