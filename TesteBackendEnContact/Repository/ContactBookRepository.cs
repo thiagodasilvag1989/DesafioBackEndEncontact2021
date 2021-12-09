@@ -103,7 +103,7 @@ namespace TesteBackendEnContact.Repository
         public int Id { get; set; }
         public string Name { get; set; }
 
-        public ContactBookDao()
+        public ContactBookDao(Core.Interface.ContactBook.Contact.IContact contact)
         {
         }
 

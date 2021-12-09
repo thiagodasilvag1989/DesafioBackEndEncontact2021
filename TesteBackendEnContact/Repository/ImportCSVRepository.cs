@@ -12,7 +12,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TesteBackendEnContact.Core.Domain;
+using TesteBackendEnContact.Core.Domain.ContactBook.Contact;
 using TesteBackendEnContact.Core.Interface;
+using TesteBackendEnContact.Core.Interface.ContactBook.Contact;
 using TesteBackendEnContact.Database;
 using TesteBackendEnContact.Repository.Interface;
 
@@ -34,19 +36,26 @@ namespace TesteBackendEnContact.Repository
             {
                 List<ImportCSV> importCSVs = new List<ImportCSV>();
 
+                ImportCSV importLine = new ImportCSV();
+
                 while (!reader.EndOfStream)
                 {
-                    ImportCSV import = new ImportCSV();
                     var linha = reader.ReadLine();
                     var valores = linha.Split(';');
-                    import.Company = valores[0];
-                    import.Name = valores[1];
-                    import.Phone = valores[2];
-                    import.Email = valores[3];
-                    import.Adress = valores[4];
-                    import.ContactName = valores[5];
-
-                    importCSVs.Add(import);
+                    if (linha != null)
+                    {
+                        importLine.Company = valores[0];
+                        importLine.Name = valores[1];
+                        importLine.Phone = valores[2];
+                        importLine.Email = valores[3];
+                        importLine.Adress = valores[4];
+                        importLine.ContactName = valores[5];
+                    }
+                    else
+                    {
+                        continue;
+                    }
+                    importCSVs.Add(importLine);
                 }
 
                 return importCSVs;
@@ -62,25 +71,47 @@ namespace TesteBackendEnContact.Repository
             {
                 //TODO: Passar todos as colunas para os parametros e fazer o insert para cada ID
 
-                var dao = new ImportCSVDao(importCSV);
+               
 
-                if (importCSV.CompanyId == 0)
+                if (importCSV.ContactBookId == 0)
                 {
-                    dao.CompanyId = await connection.InsertAsync(dao);
-                }
-                    var paramDetails = new DynamicParameters();
-                paramDetails.Add("@Company", importCSV.Company);
-                paramDetails.Add("@Name", importCSV.Name);
-                paramDetails.Add("@Phone", importCSV.Phone);
-                paramDetails.Add("@Email", importCSV.Email);
-                paramDetails.Add("@Adress", importCSV.Adress);
-               // paramDetails.Add("@ContactName", importCSV.ContactName);
+                    IContact contact = null;
+                    var dao = new ContactBookDao(contact);
+                    contact.ContactBookId = importCSV.ContactBookId;
+                    contact.CompanyId = importCSV.CompanyId;
+                    contact.Name = importCSV.Name;
+                    contact.Phone = importCSV.Phone;
+                    contact.Email = importCSV.Email;
+                    contact.Address = importCSV.Adress;
+                    dao.Id = await connection.InsertAsync(dao);
 
-                var sql = new StringBuilder();
-                //sql.AppendLine("INSERT INTO Company VALUES (@Company)");
-                sql.AppendLine("INSERT INTO Contact VALUES (@Name, @Phone,@Email,@Adress)");
-                //sql.AppendLine("INSERT INTO ContactBook VALUES (@ContactName)");
-                await connection.ExecuteAsync(sql.ToString(), new { paramDetails }, transaction);
+                    
+                }
+
+                //if (importCSV.ContactBookId == 0)
+                //{
+                //    dao.ContactBookId = await connection.InsertAsync(dao);
+                //}
+
+                //if (importCSV.ContactId == 0)
+                //{
+                //    dao.ContactId = await connection.InsertAsync(dao);
+                //}
+                //var paramDetails = new DynamicParameters();
+                ////paramDetails.Add("@Company", importCSV.Company);
+                //paramDetails.Add("@ContactBookId", dao.ContactBookId);
+                //paramDetails.Add("@CompanyId", dao.CompanyId);
+                //paramDetails.Add("@Name", importCSV.Name);
+                //paramDetails.Add("@Phone", importCSV.Phone);
+                //paramDetails.Add("@Email", importCSV.Email);
+                //paramDetails.Add("@Adress", importCSV.Adress);
+                //// paramDetails.Add("@ContactName", importCSV.ContactName);
+
+                //var sql = new StringBuilder();
+                ////sql.AppendLine("INSERT INTO Company VALUES (@Company)");
+                //sql.AppendLine("INSERT INTO Contact VALUES (@Name, @Phone,@Email,@Adress)");
+                ////sql.AppendLine("INSERT INTO ContactBook VALUES (@ContactName)");
+                //await connection.ExecuteAsync(sql.ToString(), new { paramDetails }, transaction);
 
                 transaction.Commit();
             }
@@ -97,14 +128,11 @@ namespace TesteBackendEnContact.Repository
 
         //}
 
-        [Table("Company")]
+
         public class ImportCSVDao : IImportCSV
         {
-            [Key]
             public int CompanyId { get; set; }
-            [Key]
             public int ContactBookId { get; set; }
-            [Key]
             public int ContactId { get; set; }
             public string Company { get; set; }
             public string Name { get; set; }

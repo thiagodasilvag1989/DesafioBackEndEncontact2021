@@ -1,7 +1,9 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\TesteBackendEnContact",
+    "\\TesteBackendEnContact\\Repository"
   ],
-  "SelectedNode": "\\TesteBackendEnContact.sln",
+  "SelectedNode": "\\TesteBackendEnContact\\Repository\\ImportCSVRepository.cs",
   "PreviewInSolutionExplorer": false
 }
